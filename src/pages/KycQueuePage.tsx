@@ -143,9 +143,9 @@ export function KycQueuePage() {
                         <tr key={row.id}>
                           <td>
                             <div className="flex items-center gap-3">
-                              <Avatar name={row.fullNameOnId} size={36} />
+                              <Avatar name={row.accountFullName || 'Tài khoản'} src={row.avatarUrl ?? undefined} size={36} />
                               <div>
-                                <strong>{row.fullNameOnId}</strong>
+                                <strong>{row.accountFullName || 'Chưa đặt tên'}</strong>
                                 <div style={{ color: 'var(--text-muted)', fontSize: 'var(--fs-xs)' }}>{row.accountId}</div>
                               </div>
                             </div>

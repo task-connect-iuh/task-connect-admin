@@ -21,6 +21,10 @@ export interface KycReviewSummary {
   id: string
   accountId: string
   fullNameOnId: string
+  // Ten that/avatar cua tai khoan (tu user_profiles) - khac fullNameOnId (chuoi go tay tren
+  // CCCD). Co the null neu tai khoan (hiem) chua tung tao ho so.
+  accountFullName: string | null
+  avatarUrl: string | null
   status: KycStatus
   submittedAt: string
 }
@@ -71,7 +75,14 @@ export function rejectKyc(kycVerificationId: string, rejectionReason: string) {
 export interface CertificationReviewSummary {
   id: string
   accountId: string
+  // Ten that/avatar cua tai khoan (tu user_profiles) - co the null neu tai khoan (hiem) chua
+  // tung tao ho so.
+  accountFullName: string | null
+  avatarUrl: string | null
   categoryId: string
+  // Ten nhom dich vu (tu user_service_categories) - co the null neu danh muc bi xoa sau khi
+  // da nop (hiem).
+  categoryName: string | null
   certificateTypeId: string
   status: CertificationStatus
   submittedAt: string

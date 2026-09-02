@@ -13,6 +13,13 @@ const BASE_URL = 'http://localhost:8080/api/v1'
 const ACCESS_TOKEN_EXPIRED_CODE = 'COMMON-401-UNAUTHENTICATED'
 const REFRESH_PATH = '/auth/refresh'
 
+// Phan biet cookie refresh_token voi task-connect-fe (cung goi chung backend nay, cung
+// origin luc dev lan production) - thieu header nay backend mac dinh coi la "client", nen
+// app admin BAT BUOC phai gan header nay, khong thi se dung chung cookie voi client va
+// giay cookie cho nhau moi khi ca 2 dang nhap trong cung 1 trinh duyet. Xem
+// AuthController.java (APP_HEADER).
+const APP_HEADER = { 'X-App': 'admin' }
+
 interface ApiEnvelope<T> {
   success: boolean
   data?: T
@@ -29,7 +36,7 @@ let refreshPromise: Promise<boolean> | null = null
 /** Goi POST /auth/refresh bang cookie httpOnly, cap nhat session moi vao store neu thanh cong. */
 function refreshSession(): Promise<boolean> {
   if (!refreshPromise) {
-    refreshPromise = fetch(BASE_URL + REFRESH_PATH, { method: 'POST', credentials: 'include' })
+    refreshPromise = fetch(BASE_URL + REFRESH_PATH, { method: 'POST', credentials: 'include', headers: APP_HEADER })
       .then(async (response) => {
         if (!response.ok) return false
         const payload: ApiEnvelope<TokenResponse> | null = await response.json().catch(() => null)
@@ -82,6 +89,7 @@ export async function apiFetch<T = unknown>(path: string, { method = 'GET', body
     credentials: 'include', // gui cookie httpOnly chua refresh token
     headers: {
       'Content-Type': 'application/json',
+      ...APP_HEADER,
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...headers,
     },
