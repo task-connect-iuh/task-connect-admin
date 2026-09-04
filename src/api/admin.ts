@@ -1,8 +1,8 @@
 import { apiFetch } from './client.ts'
 
 // Khop dung enum that cua backend, xem vn.taskconnect.user.api.{KycStatus,CertificationStatus}.
-export type KycStatus = 'NOT_SUBMITTED' | 'VERIFYING' | 'VERIFIED' | 'REJECTED'
-export type CertificationStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED'
+export type KycStatus = 'NOT_SUBMITTED' | 'VERIFYING' | 'VERIFIED' | 'REJECTED' | 'CANCELLED'
+export type CertificationStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'EXPIRED' | 'CANCELLED'
 
 /** Khop PageResponse<T> that cua backend (common/response/PageResponse.java). */
 export interface PageResponse<T> {

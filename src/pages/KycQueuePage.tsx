@@ -14,11 +14,13 @@ import { approveKyc, getKycDetail, listPendingKyc, rejectKyc } from '../api/admi
 import type { KycReviewDetail, KycReviewSummary, KycStatus } from '../api/admin.ts'
 import { ApiError } from '../api/client.ts'
 import { useQueueCountsStore } from '../stores/useQueueCountsStore.ts'
+import { useToastStore } from '../stores/useToastStore.ts'
 
 const TABS: { value: KycStatus, label: string }[] = [
   { value: 'VERIFYING', label: 'Đang chờ' },
   { value: 'VERIFIED', label: 'Đã duyệt' },
   { value: 'REJECTED', label: 'Đã từ chối' },
+  { value: 'CANCELLED', label: 'Đã huỷ' },
 ]
 
 const STATUS_TONE: Record<KycStatus, 'warning' | 'success' | 'danger' | 'neutral'> = {
@@ -26,6 +28,7 @@ const STATUS_TONE: Record<KycStatus, 'warning' | 'success' | 'danger' | 'neutral
   VERIFYING: 'warning',
   VERIFIED: 'success',
   REJECTED: 'danger',
+  CANCELLED: 'neutral',
 }
 
 function formatDateTime(iso: string) {
@@ -87,9 +90,15 @@ export function KycQueuePage() {
     setActionBusyId(row.id)
     try {
       await approveKyc(row.id)
+      useToastStore.getState().pushToast('success', 'Đã duyệt hồ sơ xác minh danh tính.')
       load()
     } catch (error) {
       setActionError(error instanceof ApiError ? error.message : 'Không duyệt được hồ sơ. Kiểm tra mạng rồi thử lại.')
+      // Loi thuong gap nhat o day la USR-409-KYC_NOT_PENDING_REVIEW (chinh chu vua tu huy
+      // hoac Admin khac vua xu ly dung luc gan nhu dong thoi) - lam moi bang ngay de dong
+      // (gio da CANCELLED/da xu ly) bien mat khoi tab "Dang cho", tranh Admin nham tuong
+      // dong con hop le.
+      load()
     } finally {
       setActionBusyId(null)
     }
@@ -107,9 +116,12 @@ export function KycQueuePage() {
       await rejectKyc(rejectTarget.id, rejectReason.trim())
       setRejectTarget(null)
       setRejectReason('')
+      useToastStore.getState().pushToast('success', 'Đã từ chối hồ sơ xác minh danh tính.')
       load()
     } catch (error) {
       setRejectError(error instanceof ApiError ? error.message : 'Không từ chối được hồ sơ. Kiểm tra mạng rồi thử lại.')
+      // Cung ly do voi handleApprove - lam moi bang ngay neu day la loi "khong con cho duyet".
+      load()
     } finally {
       setActionBusyId(null)
     }

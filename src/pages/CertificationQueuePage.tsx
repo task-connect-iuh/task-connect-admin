@@ -14,11 +14,13 @@ import { approveCertification, getCertificationHistory, listPendingCertification
 import type { CertificationReviewDetail, CertificationReviewSummary, CertificationStatus } from '../api/admin.ts'
 import { ApiError } from '../api/client.ts'
 import { useQueueCountsStore } from '../stores/useQueueCountsStore.ts'
+import { useToastStore } from '../stores/useToastStore.ts'
 
 const TABS: { value: CertificationStatus, label: string }[] = [
   { value: 'PENDING_REVIEW', label: 'Đang chờ' },
   { value: 'APPROVED', label: 'Đã duyệt' },
   { value: 'REJECTED', label: 'Đã từ chối' },
+  { value: 'CANCELLED', label: 'Đã huỷ' },
 ]
 
 const STATUS_TONE: Record<CertificationStatus, 'warning' | 'success' | 'danger' | 'neutral'> = {
@@ -26,6 +28,7 @@ const STATUS_TONE: Record<CertificationStatus, 'warning' | 'success' | 'danger' 
   APPROVED: 'success',
   REJECTED: 'danger',
   EXPIRED: 'neutral',
+  CANCELLED: 'neutral',
 }
 
 function formatDateTime(iso: string) {
@@ -89,9 +92,14 @@ export function CertificationQueuePage() {
     setActionBusyId(row.id)
     try {
       await approveCertification(row.id)
+      useToastStore.getState().pushToast('success', 'Đã duyệt hồ sơ chứng chỉ.')
       load()
     } catch (error) {
       setActionError(error instanceof ApiError ? error.message : 'Không duyệt được chứng chỉ. Kiểm tra mạng rồi thử lại.')
+      // Loi thuong gap nhat o day la USR-409-CERTIFICATION_NOT_PENDING_REVIEW (chinh chu vua
+      // tu huy hoac Admin khac vua xu ly dung luc gan nhu dong thoi) - lam moi bang ngay de
+      // dong (gio da CANCELLED/da xu ly) bien mat khoi tab "Dang cho".
+      load()
     } finally {
       setActionBusyId(null)
     }
@@ -109,9 +117,12 @@ export function CertificationQueuePage() {
       await rejectCertification(rejectTarget.id, rejectReason.trim())
       setRejectTarget(null)
       setRejectReason('')
+      useToastStore.getState().pushToast('success', 'Đã từ chối hồ sơ chứng chỉ.')
       load()
     } catch (error) {
       setRejectError(error instanceof ApiError ? error.message : 'Không từ chối được chứng chỉ. Kiểm tra mạng rồi thử lại.')
+      // Cung ly do voi handleApprove - lam moi bang ngay neu day la loi "khong con cho duyet".
+      load()
     } finally {
       setActionBusyId(null)
     }

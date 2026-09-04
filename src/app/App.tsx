@@ -7,6 +7,7 @@ import { LoginPage } from '../pages/LoginPage.tsx'
 import { NotFoundPage } from '../pages/NotFoundPage.tsx'
 import { OpsDashboardPage } from '../pages/OpsDashboardPage.tsx'
 import { ResetPasswordPage } from '../pages/ResetPasswordPage.tsx'
+import { ToastHost } from '../components/ToastHost.tsx'
 import { AuthBootstrap } from './AuthBootstrap.tsx'
 import { GuestGuard } from './GuestGuard.tsx'
 import { RoleGuard } from './RoleGuard.tsx'
@@ -18,6 +19,7 @@ function App() {
     // cua cac lenh navigate() ngay sau setSession() trong LoginPage.tsx.
     <BrowserRouter useTransitions={false}>
       <AuthBootstrap />
+      <ToastHost />
       <Routes>
         <Route
           path="/"
